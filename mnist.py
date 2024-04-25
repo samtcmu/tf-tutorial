@@ -4,6 +4,7 @@ import tensorflow as tf
 
 
 def PrintMnistExample(pixels):
+    """Pretty prints `pixels` to the terminal."""
     print(" -" + ("-" * len(pixels[0]) * 3) + " ")
     for r in range(len(pixels)):
         print("| ", end="")
@@ -17,6 +18,8 @@ def PrintMnistExample(pixels):
 
 
 def ReadPixels():
+    """Reads handcrafted MNIST example from stdin and returns them as a
+    28x28 tensor."""
     pixels = np.zeros([28, 28], dtype=np.int64)
     r, c = 0, 0
     for line in sys.stdin:
