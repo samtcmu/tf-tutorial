@@ -50,6 +50,11 @@ def main():
         print(pixels)
         print(label)
 
+    training_data = tf.data.Dataset.from_tensor_slices(
+        (train_images, train_labels)).batch(32)
+    test_data = tf.data.Dataset.from_tensor_slices(
+        (test_images, test_labels)).batch(32)
+
     # Define the neural network model architecture using the Tensorflow
     # Sequential Model API.
     model = tf.keras.models.Sequential([
@@ -69,10 +74,10 @@ def main():
                   metrics=['accuracy'])
 
     # Train the model.
-    model.fit(train_images, train_labels, epochs=20, verbose=2)
+    model.fit(training_data, epochs=7, validation_data=test_data, verbose=2)
 
     # Evaluate the performance of the model.
-    model.evaluate(test_images,  test_labels, verbose=2)
+    model.evaluate(test_data, verbose=2)
 
     # Run the model in inference mode on a particular example.
     pixels = ReadPixels()
