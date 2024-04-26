@@ -35,18 +35,70 @@ def ReadPixels():
     return pixels
 
 
+def GetShiftRange(pixels):
+    up = 0
+    for r in range(len(pixels)):
+        if any(pixels[r][c] != 0 for c in range(len(pixels[r]))):
+            break
+        up += 1
+
+    down = 0
+    for r in range(len(pixels) - 1, -1 , -1):
+        if any(pixels[r][c] != 0 for c in range(len(pixels[r]))):
+            break
+        down += 1
+
+    left = 0
+    for c in range(len(pixels[0])):
+        if any(pixels[r][c] != 0 for r in range(len(pixels))):
+            break
+        left += 1
+
+    right = 0
+    for c in range(len(pixels[0]) - 1, -1, -1):
+        if any(pixels[r][c] != 0 for r in range(len(pixels))):
+            break
+        right += 1
+
+    return (-up, down), (-left, right)
+
+
+
+
+def GenerateShiftedData(images, labels):
+    if len(images) == 0 or len(labels) == 0 or len(images) != len(labels):
+        return None, None
+
+    shifted_images = []
+    shifted_labels = []
+    for pixels, label in zip(images, labels):
+        shift_row_range, shift_column_range = GetShiftRange(pixels)
+        for dr in range(shift_row_range[0], shift_row_range[1] + 1):
+            for dc in range(shift_column_range[0], shift_column_range[1] + 1):
+                shifted_pixels = np.roll(pixels, (dr, dc), axis=(0, 1))
+                shifted_images.append(shifted_pixels.reshape((1, 28, 28)))
+                shifted_labels.append(label.reshape((1, 1)))
+    return np.concatenate(shifted_images), np.concatenate(shifted_labels)
+
+
 def main():
     # Prevent numpy from aggressively linewrapping printed tensors.
     np.set_printoptions(linewidth=300)
 
     # Fetch the MNIST hand written digits dataset.
     mnist = tf.keras.datasets.mnist.load_data()
-    train_images, train_labels = mnist[0]
+    training_images, training_labels = mnist[0]
     test_images, test_labels = mnist[1]
+
+    generated_shifted_data = True
+    if generated_shifted_data:
+        training_images, training_labels = GenerateShiftedData(
+            training_images, training_labels)
+        test_images, test_labels = GenerateShiftedData(test_images, test_labels)
 
     # Print the first n training and test examples. 
     n = 0
-    for pixels, label in zip(train_images[0:n], train_labels[0:n]):
+    for pixels, label in zip(training_images[0:n], training_labels[0:n]):
         print(pixels)
         print(label)
     for pixels, label in zip(test_images[0:n], test_labels[0:n]):
@@ -54,9 +106,9 @@ def main():
         print(label)
 
     training_data = tf.data.Dataset.from_tensor_slices(
-        (train_images, train_labels)).batch(32)
+        (training_images, training_labels)).shuffle(10000).batch(32)
     test_data = tf.data.Dataset.from_tensor_slices(
-        (test_images, test_labels)).batch(32)
+        (test_images, test_labels)).shuffle(10000).batch(32)
 
     # Define the neural network model architecture using the Tensorflow
     # Sequential Model API.
@@ -87,9 +139,7 @@ def main():
     PrintMnistExample(pixels)
     pixels = tf.reshape(pixels, [1, 28, 28])
     raw_inference = model.predict(pixels)[0]
-    # print(raw_inference)
     softmaxed_inference = tf.nn.softmax(raw_inference)
-    # print(softmaxed_inference.numpy())
     inference = tf.math.argmax(softmaxed_inference)
     print(inference.numpy())
 
