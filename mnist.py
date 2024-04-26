@@ -91,7 +91,9 @@ def main():
     test_images, test_labels = mnist[1]
 
     generated_shifted_data = True
+    original_test_images, original_test_labels = test_images, test_labels
     if generated_shifted_data:
+        print("Generating shifted training and test data")
         training_images, training_labels = GenerateShiftedData(
             training_images, training_labels)
         test_images, test_labels = GenerateShiftedData(test_images, test_labels)
@@ -109,6 +111,8 @@ def main():
         (training_images, training_labels)).shuffle(10000).batch(32)
     test_data = tf.data.Dataset.from_tensor_slices(
         (test_images, test_labels)).shuffle(10000).batch(32)
+    original_test_data = tf.data.Dataset.from_tensor_slices(
+        (original_test_images, original_test_labels)).batch(32)
 
     # Define the neural network model architecture using the Tensorflow
     # Sequential Model API.
@@ -129,10 +133,14 @@ def main():
                   metrics=['accuracy'])
 
     # Train the model.
-    model.fit(training_data, epochs=7, validation_data=test_data, verbose=2)
+    model.fit(training_data, epochs=7, validation_data=test_data, verbose=1)
 
     # Evaluate the performance of the model.
-    model.evaluate(test_data, verbose=2)
+    print("Evaluating model:")
+    model.evaluate(test_data, verbose=1)
+    # model.evaluate(original_test_data, verbose=1)
+
+    model.save("mnist_model.keras")
 
     # Run the model in inference mode on a particular example.
     pixels = ReadPixels()
