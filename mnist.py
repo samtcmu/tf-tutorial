@@ -66,9 +66,12 @@ def GetShiftRange(pixels):
     return (-up, down), (-left, right)
 
 
-def GenerateShiftedData(images, labels):
+def GenerateShiftedData(images, labels, unit_name='example'):
     if len(images) == 0 or len(labels) == 0 or len(images) != len(labels):
         return None, None
+
+    progress_bar = tf.keras.utils.Progbar(
+        len(images), 60, verbose=1, unit_name=unit_name)
 
     shifted_images = []
     shifted_labels = []
@@ -79,6 +82,7 @@ def GenerateShiftedData(images, labels):
                 shifted_pixels = np.roll(pixels, (dr, dc), axis=(0, 1))
                 shifted_images.append(shifted_pixels.reshape((1, 28, 28)))
                 shifted_labels.append(label.reshape((1, 1)))
+        progress_bar.add(1)
     return np.concatenate(shifted_images), np.concatenate(shifted_labels)
 
 
@@ -119,8 +123,9 @@ def main():
         print("Generating shifted training and test data")
         if flags.train_model:
             training_images, training_labels = GenerateShiftedData(
-                training_images, training_labels)
-        test_images, test_labels = GenerateShiftedData(test_images, test_labels)
+                training_images, training_labels, unit_name="training example")
+        test_images, test_labels = GenerateShiftedData(
+            test_images, test_labels, unit_name="test example")
 
     # Print the first n training and test examples. 
     n = 0
@@ -132,9 +137,9 @@ def main():
         print(label)
 
     training_data = tf.data.Dataset.from_tensor_slices(
-        (training_images, training_labels)).shuffle(10000).batch(32)
+        (training_images, training_labels)).shuffle(10000).batch(8192)
     test_data = tf.data.Dataset.from_tensor_slices(
-        (test_images, test_labels)).shuffle(10000).batch(32)
+        (test_images, test_labels)).shuffle(10000).batch(8192)
 
     if flags.train_model:
         # Define the neural network model architecture using the Tensorflow
@@ -154,7 +159,6 @@ def main():
         model.compile(optimizer='adam',
                       loss=loss_fn,
                       metrics=['accuracy'])
-
         
         # Set up tensorboard. Run the following command on the command line during
         # training:
@@ -163,8 +167,8 @@ def main():
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir,
                                                               histogram_freq=1)
 
-
         # Train the model.
+        print(f"Training model: {model.summary()}")
         model.fit(training_data, epochs=7, validation_data=test_data, verbose=1,
                   callbacks=[tensorboard_callback])
 
@@ -172,12 +176,17 @@ def main():
         print("Evaluating model:")
         model.evaluate(test_data, verbose=1)
 
+        print(f"Saving model to {flags.model_file:s}")
         model.save(flags.model_file)
     else:
         # This is needed because the model has a Lambda layer.
         tf.keras.config.enable_unsafe_deserialization()
 
+        print(f"Loading model from {flags.model_file:s}")
         model = tf.keras.models.load_model(flags.model_file)
+        print(f"Loaded model from {flags.model_file:s}: {model.summary()}")
+
+        print("Evaluating model:")
         model.evaluate(test_data, verbose=1)
 
     # Run the model in inference mode on a particular example.
@@ -186,9 +195,9 @@ def main():
     print(Infer(model, pixels))
     shift_row_range, shift_column_range = GetShiftRange(pixels)
     for i in range(10):
-        (dr, dc) = (random.randint(shift_row_range[0], shift_row_range[1] + 1),
-                    random.randint(shift_column_range[0], shift_column_range[1] + 1))
-        print(f"shift {i:02d}: ({dr:02d}, {dc:02d})")
+        (dr, dc) = (random.randint(shift_row_range[0], shift_row_range[1]),
+                    random.randint(shift_column_range[0], shift_column_range[1]))
+        print(f"shift {i:02d}: ({dr:d}, {dc:d})")
         shifted_pixels = np.roll(pixels, (dr, dc), axis=(0, 1))
         PrintMnistExample(shifted_pixels)
         print(Infer(model, shifted_pixels))
