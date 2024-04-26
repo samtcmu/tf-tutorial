@@ -1,4 +1,7 @@
+import argparse
+import datetime
 import numpy as np
+import random
 import sys
 import tensorflow as tf
 
@@ -63,8 +66,6 @@ def GetShiftRange(pixels):
     return (-up, down), (-left, right)
 
 
-
-
 def GenerateShiftedData(images, labels):
     if len(images) == 0 or len(labels) == 0 or len(images) != len(labels):
         return None, None
@@ -81,7 +82,30 @@ def GenerateShiftedData(images, labels):
     return np.concatenate(shifted_images), np.concatenate(shifted_labels)
 
 
+def Infer(model, pixels):
+    pixels = tf.reshape(pixels, [1, 28, 28])
+    raw_inference = model.predict(pixels)[0]
+    softmaxed_inference = tf.nn.softmax(raw_inference)
+    inference = tf.math.argmax(softmaxed_inference)
+    return inference.numpy()
+
+
 def main():
+    # Parse command line arguments.
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--train_model", "-t",
+        help="Whether to train a model on the MNIST dataset.",
+        default=False,
+        action="store_true")
+    parser.add_argument(
+        "--model_file", "-m",
+        help="The path to either the model to load or where the model should "
+             "be saved.",
+        default="mnist_model.keras",
+        type=str)
+    flags = parser.parse_args()
+
     # Prevent numpy from aggressively linewrapping printed tensors.
     np.set_printoptions(linewidth=300)
 
@@ -91,11 +115,11 @@ def main():
     test_images, test_labels = mnist[1]
 
     generated_shifted_data = True
-    original_test_images, original_test_labels = test_images, test_labels
     if generated_shifted_data:
         print("Generating shifted training and test data")
-        training_images, training_labels = GenerateShiftedData(
-            training_images, training_labels)
+        if flags.train_model:
+            training_images, training_labels = GenerateShiftedData(
+                training_images, training_labels)
         test_images, test_labels = GenerateShiftedData(test_images, test_labels)
 
     # Print the first n training and test examples. 
@@ -111,45 +135,63 @@ def main():
         (training_images, training_labels)).shuffle(10000).batch(32)
     test_data = tf.data.Dataset.from_tensor_slices(
         (test_images, test_labels)).shuffle(10000).batch(32)
-    original_test_data = tf.data.Dataset.from_tensor_slices(
-        (original_test_images, original_test_labels)).batch(32)
 
-    # Define the neural network model architecture using the Tensorflow
-    # Sequential Model API.
-    model = tf.keras.models.Sequential([
-        tf.keras.layers.Input((28, 28)),
-        tf.keras.layers.Lambda(lambda x: x / 255.0),
-        tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(128, activation='relu'),
-        tf.keras.layers.Normalization(axis=None, mean=0.0, variance=1.0),
-        tf.keras.layers.Dropout(0.2),
-        tf.keras.layers.Dense(10)
-    ])
+    if flags.train_model:
+        # Define the neural network model architecture using the Tensorflow
+        # Sequential Model API.
+        model = tf.keras.models.Sequential([
+            tf.keras.layers.Input((28, 28)),
+            tf.keras.layers.Lambda(lambda x: x / 255.0),
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(128, activation='relu'),
+            tf.keras.layers.Normalization(axis=None, mean=0.0, variance=1.0),
+            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.Dense(10)
+        ])
 
-    # Define the training procedure for the model.
-    loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-    model.compile(optimizer='adam',
-                  loss=loss_fn,
-                  metrics=['accuracy'])
+        # Define the training procedure for the model.
+        loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        model.compile(optimizer='adam',
+                      loss=loss_fn,
+                      metrics=['accuracy'])
 
-    # Train the model.
-    model.fit(training_data, epochs=7, validation_data=test_data, verbose=1)
+        
+        # Set up tensorboard. Run the following command on the command line during
+        # training:
+        #   python3 -m tensorboard.main --logdir=logs/fit
+        log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir,
+                                                              histogram_freq=1)
 
-    # Evaluate the performance of the model.
-    print("Evaluating model:")
-    model.evaluate(test_data, verbose=1)
-    # model.evaluate(original_test_data, verbose=1)
 
-    model.save("mnist_model.keras")
+        # Train the model.
+        model.fit(training_data, epochs=7, validation_data=test_data, verbose=1,
+                  callbacks=[tensorboard_callback])
+
+        # Evaluate the performance of the model.
+        print("Evaluating model:")
+        model.evaluate(test_data, verbose=1)
+
+        model.save(flags.model_file)
+    else:
+        # This is needed because the model has a Lambda layer.
+        tf.keras.config.enable_unsafe_deserialization()
+
+        model = tf.keras.models.load_model(flags.model_file)
+        model.evaluate(test_data, verbose=1)
 
     # Run the model in inference mode on a particular example.
     pixels = ReadPixels()
     PrintMnistExample(pixels)
-    pixels = tf.reshape(pixels, [1, 28, 28])
-    raw_inference = model.predict(pixels)[0]
-    softmaxed_inference = tf.nn.softmax(raw_inference)
-    inference = tf.math.argmax(softmaxed_inference)
-    print(inference.numpy())
+    print(Infer(model, pixels))
+    shift_row_range, shift_column_range = GetShiftRange(pixels)
+    for i in range(10):
+        (dr, dc) = (random.randint(shift_row_range[0], shift_row_range[1] + 1),
+                    random.randint(shift_column_range[0], shift_column_range[1] + 1))
+        print(f"shift {i:02d}: ({dr:02d}, {dc:02d})")
+        shifted_pixels = np.roll(pixels, (dr, dc), axis=(0, 1))
+        PrintMnistExample(shifted_pixels)
+        print(Infer(model, shifted_pixels))
 
 
 if __name__ == "__main__":

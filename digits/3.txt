@@ -1,0 +1,30 @@
+ -------------------------------------------------------------------------------------
+|                                                                                     |
+|                                                                                     |
+|                                                                                     |
+|                                           88 88 88 88                               |
+|                                        88 ff ff ff ff 88                            |
+|                                     88 ff ff ff ff ff ff 88                         |
+|                                  88 ff ff ff ff ff ff ff ff 88                      |
+|                                  88 ff ff ff 88 88 ff ff ff ff 88                   |
+|                                  88 ff ff 88       88 ff ff ff 88                   |
+|                                     88 88          88 ff ff ff 88                   |
+|                                                    88 ff ff ff 88                   |
+|                                                 88 ff ff ff 88                      |
+|                                              88 ff ff ff 88                         |
+|                                           88 ff ff ff 88                            |
+|                                           88 ff ff ff 88                            |
+|                                           88 ff ff ff ff 88                         |
+|                                              88 ff ff ff ff 88                      |
+|                                                 88 ff ff ff ff 88                   |
+|                                                    88 ff ff ff 88                   |
+|                                     88 88          88 ff ff ff 88                   |
+|                                  88 ff ff 88       88 ff ff ff 88                   |
+|                                  88 ff ff ff 88 88 ff ff ff ff 88                   |
+|                                  88 ff ff ff ff ff ff ff ff 88                      |
+|                                     88 ff ff ff ff ff ff 88                         |
+|                                        88 ff ff ff ff 88                            |
+|                                           88 88 88 88                               |
+|                                                                                     |
+|                                                                                     |
+ -------------------------------------------------------------------------------------
