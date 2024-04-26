@@ -108,6 +108,12 @@ def main():
              "be saved.",
         default="mnist_model.keras",
         type=str)
+    parser.add_argument(
+        "--infer", "-i",
+        help="Whether to run the model in inference mode based on data passed "
+             "in through stdin",
+        default=False,
+        action="store_true")
     flags = parser.parse_args()
 
     # Prevent numpy from aggressively linewrapping printed tensors.
@@ -190,17 +196,18 @@ def main():
         model.evaluate(test_data, verbose=1)
 
     # Run the model in inference mode on a particular example.
-    pixels = ReadPixels()
-    PrintMnistExample(pixels)
-    print(Infer(model, pixels))
-    shift_row_range, shift_column_range = GetShiftRange(pixels)
-    for i in range(10):
-        (dr, dc) = (random.randint(shift_row_range[0], shift_row_range[1]),
-                    random.randint(shift_column_range[0], shift_column_range[1]))
-        print(f"shift {i:02d}: ({dr:d}, {dc:d})")
-        shifted_pixels = np.roll(pixels, (dr, dc), axis=(0, 1))
-        PrintMnistExample(shifted_pixels)
-        print(Infer(model, shifted_pixels))
+    if flags.infer:
+        pixels = ReadPixels()
+        PrintMnistExample(pixels)
+        print(Infer(model, pixels))
+        shift_row_range, shift_column_range = GetShiftRange(pixels)
+        for i in range(10):
+            (dr, dc) = (random.randint(shift_row_range[0], shift_row_range[1]),
+                        random.randint(shift_column_range[0], shift_column_range[1]))
+            print(f"shift {i:02d}: ({dr:d}, {dc:d})")
+            shifted_pixels = np.roll(pixels, (dr, dc), axis=(0, 1))
+            PrintMnistExample(shifted_pixels)
+            print(Infer(model, shifted_pixels))
 
 
 if __name__ == "__main__":
