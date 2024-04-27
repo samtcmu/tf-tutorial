@@ -94,6 +94,78 @@ def Infer(model, pixels):
     return inference.numpy()
 
 
+def GetMnistDataset(generate_shifted_data=False,
+                    training_examples_to_print=0,
+                    shuffle_size=10000,
+                    batch_size=32):
+    """Set generated_shifted_data to True if you want to add more training and
+    test examples by shifting the onces provided by
+    tf.keras.datasets.mnist.load_data().
+    """
+    # Fetch the MNIST hand written digits dataset.
+    mnist = tf.keras.datasets.mnist.load_data()
+    training_images, training_labels = mnist[0]
+    test_images, test_labels = mnist[1]
+
+    if generate_shifted_data:
+        print("Generating shifted training and test data")
+        training_images, training_labels = GenerateShiftedData(
+            training_images, training_labels, unit_name="training example")
+        test_images, test_labels = GenerateShiftedData(
+            test_images, test_labels, unit_name="test example")
+
+    # Print the first n training and test examples.
+    n = training_examples_to_print
+    for pixels, label in zip(training_images[0:n], training_labels[0:n]):
+        print(pixels)
+        print(label)
+    for pixels, label in zip(test_images[0:n], test_labels[0:n]):
+        print(pixels)
+        print(label)
+
+    training_data = tf.data.Dataset.from_tensor_slices(
+        (training_images, training_labels)
+    ).shuffle(shuffle_size).batch(batch_size)
+    test_data = tf.data.Dataset.from_tensor_slices(
+        (test_images, test_labels)).shuffle(shuffle_size).batch(batch_size)
+
+    return training_data, test_data
+
+
+def TrainModel(training_data, test_data):
+    # Define the neural network model architecture using the Tensorflow
+    # Sequential Model API.
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Input((28, 28)),
+        tf.keras.layers.Lambda(lambda x: x / 255.0),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(128, activation='relu'),
+        tf.keras.layers.Normalization(axis=None, mean=0.0, variance=1.0),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Dense(10)
+    ])
+
+    # Define the training procedure for the model.
+    loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+    model.compile(optimizer='adam',
+                  loss=loss_fn,
+                  metrics=['accuracy'])
+
+    # Set up tensorboard. Run the following command on the command line during
+    # training:
+    #   python3 -m tensorboard.main --logdir=logs/fit
+    log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir,
+                                                          histogram_freq=1)
+
+    # Train the model.
+    print(f"Training model: {model.summary()}")
+    model.fit(training_data, epochs=7, validation_data=test_data, verbose=1,
+              callbacks=[tensorboard_callback])
+
+    return model
+
+
 def main():
     # Parse command line arguments.
     parser = argparse.ArgumentParser()
@@ -119,69 +191,12 @@ def main():
     # Prevent numpy from aggressively linewrapping printed tensors.
     np.set_printoptions(linewidth=300)
 
-    # Fetch the MNIST hand written digits dataset.
-    mnist = tf.keras.datasets.mnist.load_data()
-    training_images, training_labels = mnist[0]
-    test_images, test_labels = mnist[1]
+    training_data, test_data = GetMnistDataset(
+        generate_shifted_data=flags.train_model, shuffle_size=10000, batch_size=8192)
 
-    generated_shifted_data = True
-    if generated_shifted_data:
-        print("Generating shifted training and test data")
-        if flags.train_model:
-            training_images, training_labels = GenerateShiftedData(
-                training_images, training_labels, unit_name="training example")
-        test_images, test_labels = GenerateShiftedData(
-            test_images, test_labels, unit_name="test example")
-
-    # Print the first n training and test examples. 
-    n = 0
-    for pixels, label in zip(training_images[0:n], training_labels[0:n]):
-        print(pixels)
-        print(label)
-    for pixels, label in zip(test_images[0:n], test_labels[0:n]):
-        print(pixels)
-        print(label)
-
-    training_data = tf.data.Dataset.from_tensor_slices(
-        (training_images, training_labels)).shuffle(10000).batch(8192)
-    test_data = tf.data.Dataset.from_tensor_slices(
-        (test_images, test_labels)).shuffle(10000).batch(8192)
-
+    model = None
     if flags.train_model:
-        # Define the neural network model architecture using the Tensorflow
-        # Sequential Model API.
-        model = tf.keras.models.Sequential([
-            tf.keras.layers.Input((28, 28)),
-            tf.keras.layers.Lambda(lambda x: x / 255.0),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(128, activation='relu'),
-            tf.keras.layers.Normalization(axis=None, mean=0.0, variance=1.0),
-            tf.keras.layers.Dropout(0.2),
-            tf.keras.layers.Dense(10)
-        ])
-
-        # Define the training procedure for the model.
-        loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-        model.compile(optimizer='adam',
-                      loss=loss_fn,
-                      metrics=['accuracy'])
-        
-        # Set up tensorboard. Run the following command on the command line during
-        # training:
-        #   python3 -m tensorboard.main --logdir=logs/fit
-        log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir,
-                                                              histogram_freq=1)
-
-        # Train the model.
-        print(f"Training model: {model.summary()}")
-        model.fit(training_data, epochs=7, validation_data=test_data, verbose=1,
-                  callbacks=[tensorboard_callback])
-
-        # Evaluate the performance of the model.
-        print("Evaluating model:")
-        model.evaluate(test_data, verbose=1)
-
+        model = TrainModel(training_data, test_data)
         print(f"Saving model to {flags.model_file:s}")
         model.save(flags.model_file)
     else:
@@ -192,8 +207,8 @@ def main():
         model = tf.keras.models.load_model(flags.model_file)
         print(f"Loaded model from {flags.model_file:s}: {model.summary()}")
 
-        print("Evaluating model:")
-        model.evaluate(test_data, verbose=1)
+    print("Evaluating model:")
+    model.evaluate(test_data, verbose=1)
 
     # Run the model in inference mode on a particular example.
     if flags.infer:
