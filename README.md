@@ -93,6 +93,24 @@ print(f"{a:d}, {b:d}, {c:d}")
 
 ```
 
+## Simple python script creation
+
+```python
+def main():
+  print("hello, world!")
+
+if __name__ == "__main__":
+    main()
+```
+
+Save this to a file named `hello.py`. You can then run this by running the
+follow command in the terminal:
+
+```shell
+# Note that the .py extension for hello.py is omitted.
+python3 hello
+```
+
 ## Install Tensorflow
 
 ```shell
