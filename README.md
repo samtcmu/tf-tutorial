@@ -50,7 +50,7 @@ if (x % 2) != 0:
 # Printing a format string (for more info see
 # https://docs.python.org/3/tutorial/inputoutput.html#formatted-string-literals)
 # {x:d} prints the variable x as an integer
-# {y:s} prints the variable y as an integer
+# {y:s} prints the variable y as a string
 print(f"variable x = {x:d} and variable y = {y:s}")
 
 # Create a List and print it
