@@ -138,4 +138,8 @@ python3 -m pip install --user tensorboard
 
 ## Tensorflow Diamonds dataset
 
+This week I want you to build a model that can predict diamond prices based on
+their attributes (carrot weight, clarity, cut, color, etc.). Here is the
+dataset to get started:
+
 -   [Tensorflow Diamonds dataset](https://www.tensorflow.org/datasets/catalog/diamonds)
