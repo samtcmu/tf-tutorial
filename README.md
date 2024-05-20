@@ -120,3 +120,22 @@ python3 -m pip install jaxlib
 python3 -m pip install tensorboard
 python3 -m pip install --user tensorboard
 ```
+
+## Machine learning overview
+-   [Neural Networks for Machine Learning with Geoffrey Hinton](https://www.youtube.com/playlist?list=PLLssT5z_DsK_gyrQ_biidwvPYCRNGI3iv)
+    -   Geoffrey Hinton is a pioneer in machine learning and AI; these lectures
+        are the best I have seen
+    -   These lectures will give an overview of machine learning.
+    -   Watch a few of these and ask me questions if you are confused.
+
+## Tensorflow MNIST tutorial
+
+-   [TensorFlow 2 quickstart for beginners](https://www.tensorflow.org/tutorials/quickstart/beginner)
+-   [TensorFlow 2 quickstart for experts](https://www.tensorflow.org/tutorials/quickstart/advanced)
+    -   Ignore the name, you should do this tutorial so you know how to deal
+        with a tf.data.Dataset object holding your training and test data.
+-   [More Tensorflow tutorials if you are curious](https://www.tensorflow.org/tutorials)
+
+## Tensorflow Diamonds dataset
+
+-   [Tensorflow Diamonds dataset](https://www.tensorflow.org/datasets/catalog/diamonds)
