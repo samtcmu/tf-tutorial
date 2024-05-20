@@ -107,8 +107,7 @@ Save this to a file named `hello.py`. You can then run this by running the
 follow command in the terminal:
 
 ```shell
-# Note that the .py extension for hello.py is omitted.
-python3 hello
+python3 hello.py
 ```
 
 ## Install Tensorflow
