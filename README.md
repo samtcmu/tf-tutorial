@@ -135,7 +135,9 @@ python3 -m pip install --user tensorboard
 -   [TensorFlow 2 quickstart for experts](https://www.tensorflow.org/tutorials/quickstart/advanced)
     -   Ignore the name, you should do this tutorial so you know how to deal
         with a tf.data.Dataset object holding your training and test data.
+    -   [GitHub link](https://github.com/tensorflow/docs/blob/master/site/en/tutorials/quickstart/advanced.ipynb)
 -   [More Tensorflow tutorials if you are curious](https://www.tensorflow.org/tutorials)
+    -   [GitHub link](https://github.com/tensorflow/docs/blob/master/site/en/tutorials)
 
 ## Tensorflow Diamonds dataset
 
@@ -144,7 +146,9 @@ their attributes (carrot weight, clarity, cut, color, etc.). Here is the
 dataset to get started:
 
 -   [Tensorflow Diamonds dataset](https://www.tensorflow.org/datasets/catalog/diamonds)
+    -   [GitHub link](https://github.com/tensorflow/docs/blob/master/site/en/datasets/catalog/diamonds)
 
 ## Tensorflow Stanford Dog Breeds dataset
 
 -   [Tensorflow Stanford Dog Breeds dataset](https://www.tensorflow.org/datasets/catalog/stanford_dogs)
+    -   [GitHub link](https://github.com/tensorflow/docs/blob/master/site/en/datasets/catalog/stanford_dogs)
