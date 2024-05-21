@@ -131,6 +131,7 @@ python3 -m pip install --user tensorboard
 ## Tensorflow MNIST tutorial
 
 -   [TensorFlow 2 quickstart for beginners](https://www.tensorflow.org/tutorials/quickstart/beginner)
+    -   [GitHub link](https://github.com/tensorflow/docs/blob/master/site/en/tutorials/quickstart/beginner.ipynb)
 -   [TensorFlow 2 quickstart for experts](https://www.tensorflow.org/tutorials/quickstart/advanced)
     -   Ignore the name, you should do this tutorial so you know how to deal
         with a tf.data.Dataset object holding your training and test data.
