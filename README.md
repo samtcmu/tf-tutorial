@@ -145,9 +145,9 @@ their attributes (carrot weight, clarity, cut, color, etc.). Here is the
 dataset to get started:
 
 -   [Tensorflow Diamonds dataset](https://www.tensorflow.org/datasets/catalog/diamonds)
-    -   [GitHub link](https://github.com/tensorflow/datasets/blob/master/docs/catalog/diamonds)
+    -   [GitHub link](https://github.com/tensorflow/datasets/blob/master/docs/catalog/diamonds.md)
 
 ## Tensorflow Stanford Dog Breeds dataset
 
 -   [Tensorflow Stanford Dog Breeds dataset](https://www.tensorflow.org/datasets/catalog/stanford_dogs)
-    -   [GitHub link](https://github.com/tensorflow/datasets/blob/master/docs/catalog/stanford_dogs)
+    -   [GitHub link](https://github.com/tensorflow/datasets/blob/master/docs/catalog/stanford_dogs.md)
