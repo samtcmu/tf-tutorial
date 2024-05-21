@@ -98,6 +98,7 @@ class Sign:
     self._message = message
 
   # Member function.
+  # note: Each member function must accept `self` as the first input.
   def GetMessage(self):
     return self._message
 
