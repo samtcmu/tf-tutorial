@@ -91,6 +91,21 @@ b = SuperSum(a, 2)
 c = super_sum_lambda(a, b)
 print(f"{a:d}, {b:d}, {c:d}")
 
+# Creating a class
+class Sign:
+  # Constructor.
+  def __init__(self, message):
+    self._message = message
+
+  # Member function.
+  def GetMessage(self):
+    return self._message
+
+# Creating a new instance of the Sign class.
+stop_sign = Sign("STOP")
+
+# Call a member function on `stop_sign`.
+stop_sign.GetMessage()
 ```
 
 ## Simple python script creation
@@ -119,6 +134,7 @@ python3 -m pip install tensorflow
 python3 -m pip install jaxlib
 python3 -m pip install tensorboard
 python3 -m pip install --user tensorboard
+python3 -m pip install tensorflow_datasets
 ```
 
 ## Machine learning overview
