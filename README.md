@@ -155,6 +155,28 @@ python3 -m pip install tensorflow_datasets
     -   [GitHub link](https://github.com/tensorflow/docs/blob/master/site/en/tutorials/quickstart/advanced.ipynb)
 -   [More Tensorflow tutorials if you are curious](https://www.tensorflow.org/tutorials)
 
+Since you cannot read the MNIST dataset from standard sources I have written it
+to `mnist.pickle` for you. You can read it in by doing the following in python:
+
+```python
+# Use the pickle library for deserialization.
+import pickle
+
+# Open the file and deserialize (depickle) it.
+mnit = None
+with open('mnist.pickle', 'rb') as f:
+  mnist = pickle.load(f)
+
+training_images, training_labels = mnist[0]
+test_images, test_labels = mnist[1]
+
+# Print out some example data.
+print(training_images[0])
+print(training_labels[0])
+print(test_images[0])
+print(test_labels[0])
+```
+
 ## Tensorflow Diamonds dataset
 
 This week I want you to build a model that can predict diamond prices based on
